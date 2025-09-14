@@ -1,26 +1,58 @@
+//@ts-nocheck
+require('dotenv').config();
 const express = require("express");
-const httpProxy = require("http-proxy");
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const helmet = require("helmet");
 
-const proxy = httpProxy.createProxyServer();
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-// Route requests to the auth service
-app.use("/auth", (req, res) => {
-  proxy.web(req, res, { target: "http://auth:3000" });
-});
 
-// Route requests to the product service
-app.use("/products", (req, res) => {
-  proxy.web(req, res, { target: "http://product:3001" });
-});
+// Proxy configuration for AUth Service
+app.use(
+  '/auth', // Path to match for user service requests
+  createProxyMiddleware({
+    target: process.env.AUTH_SERVICE_URL,
+    changeOrigin: true, // Needed for virtual hosted sites
+    pathRewrite: {
+      '^/auth': '', // Remove '/users' from the path before forwarding
+    },
+  })
+);
 
-// Route requests to the order service
-app.use("/orders", (req, res) => {
-  proxy.web(req, res, { target: "http://order:3002" });
-});
+// Proxy configuration for Order Service
+app.use(
+  '/orders', // Path to match for order service requests
+  createProxyMiddleware({
+    target: process.env.ORDER_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: {
+      '^/orders': '',
+    },
+  })
+);
+
+// Proxy configuration for product Service
+app.use(
+  '/products', // Path to match for product service requests
+  createProxyMiddleware({
+    target: process.env.PRODUCT_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: {
+      '^/orders': '',
+    },
+  })
+);
+
+app.get('/', (req, res) => {
+  res.send('hello world')
+})
+
+app.use(helmet());
 
 // Start the server
-const port = process.env.PORT || 3003;
+
 app.listen(port, () => {
   console.log(`API Gateway listening on port ${port}`);
 });

@@ -1,3 +1,4 @@
+//@ts-nocheck
 const express = require("express");
 const mongoose = require("mongoose");
 const config = require("./config");
@@ -41,8 +42,8 @@ class App {
   }
 
   start() {
-    this.server = this.app.listen(3001, () =>
-      console.log("Server started on port 3001")
+    this.server = this.app.listen(3003, () =>
+      console.log("Server started on port 3003")
     );
   }
 

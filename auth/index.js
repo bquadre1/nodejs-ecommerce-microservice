@@ -1,3 +1,4 @@
+// @ts-nocheck
 require("dotenv").config();
 const App = require("./src/app");
 
